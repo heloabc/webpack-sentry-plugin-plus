@@ -200,10 +200,28 @@ module.exports = class SentryPlugin {
       if (!file) {
         return null
       }
-
-      return this.uploadFile(file)
+      return this.uploadFileWithRetry(file)
     }, this.uploadFilesConcurrency)
     return pool.start()
+  }
+
+  async uploadFileWithRetry(obj) {
+    let tryCount = 0;
+    while (tryCount < 3) {
+      try {
+        await this.uploadFile(obj);
+        console.log('sentry upload success-->', obj.name)
+        break;
+      } catch(err) {
+        if (
+          this.suppressErrors ||
+          (this.suppressConflictError && err.statusCode === 409)
+        ) {
+          break;
+        }
+        tryCount++;
+      }
+    }
   }
 
   uploadFile({ path, name }) {
