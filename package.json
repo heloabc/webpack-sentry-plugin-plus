@@ -1,6 +1,6 @@
 {
-  "name": "webpack-sentry-plugin",
-  "version": "1.16.0",
+  "name": "webpack-sentry-plugin-plus",
+  "version": "1.16.1",
   "description": "Webpack plugin to upload source maps to Sentry",
   "keywords": [
     "sentry",
@@ -19,16 +19,16 @@
     "precommit": "opt --in pre-commit --exec \"nps format lint\"",
     "prepush": "opt --in pre-push --exec \"nps validate\""
   },
-  "author": "Alasdair Smith <ali@alasdairsmith.co.uk>",
+  "author": "roughwin <bowenqing@innobuddy.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@github.com:40thieves/webpack-sentry-plugin.git"
+    "url": "git@code.smartstudy.com:bowenqing/webpack-sentry-plugin-plus.git"
   },
   "bugs": {
-    "url": "https://github.com/40thieves/webpack-sentry-plugin/issues"
+    "url": "http://code.smartstudy.com/bowenqing/webpack-sentry-plugin-plus"
   },
-  "homepage": "https://github.com/40thieves/webpack-sentry-plugin",
+  "homepage": "http://code.smartstudy.com/bowenqing/webpack-sentry-plugin-plus",
   "jest": {
     "notify": true,
     "roots": [
