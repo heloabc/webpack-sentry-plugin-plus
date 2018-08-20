@@ -210,7 +210,6 @@ module.exports = class SentryPlugin {
     while (tryCount < 3) {
       try {
         await this.uploadFile(obj);
-        console.log('sentry upload success-->', obj.name)
         break;
       } catch(err) {
         if (
@@ -219,7 +218,7 @@ module.exports = class SentryPlugin {
         ) {
           break;
         }
-        tryCount++;
+        console.warn('sentry upload retry: -->', tryCount++, obj.name);
       }
     }
   }
