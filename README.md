@@ -1,6 +1,4 @@
-# Sentry plugin
-
-[![Build Status](https://travis-ci.org/40thieves/webpack-sentry-plugin.svg?branch=master)](https://travis-ci.org/40thieves/webpack-sentry-plugin)
+# Sentry plugin plus
 
 A webpack (1, 2, 3 or 4) plugin to upload source maps to [Sentry](https://sentry.io/).
 
@@ -9,21 +7,21 @@ A webpack (1, 2, 3 or 4) plugin to upload source maps to [Sentry](https://sentry
 Using npm:
 
 ```
-$ npm install webpack-sentry-plugin --save-dev
+$ npm install webpack-sentry-plugin-plus --save-dev
 ```
 
 Using yarn:
 
 ```
-$ yarn add webpack-sentry-plugin --dev
+$ yarn add webpack-sentry-plugin-plus --dev
 ```
 
 ### Usage
 
-1. Require `webpack-sentry-plugin`:
+1. Require `webpack-sentry-plugin-plus`:
 
 ```js
-var SentryPlugin = require('webpack-sentry-plugin');
+var SentryPlugin = require('webpack-sentry-plugin-plus');
 ```
 
 2. Configure webpack to output source maps. Recommended reading: [webpack docs](https://webpack.js.org/configuration/devtool/), [Sentry docs](https://docs.sentry.io/clients/javascript/sourcemaps).
@@ -192,6 +190,7 @@ Raven.config({
 
 ### Thanks
 
+- Based on [@40thieves/webpack-sentry-plugin](https://github.com/40thieves/webpack-sentry-plugin)
 - Thanks to [@MikaAK](https://github.com/MikaAK) for creating [s3-webpack-plugin](https://github.com/MikaAK/s3-plugin-webpack), which inspired much of this project
 - Thanks to [@danharper](https://github.com/danharper) for creating the original build script implementation
 
