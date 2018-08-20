@@ -16,9 +16,15 @@ var _es6PromisePool = require('es6-promise-pool');
 
 var _es6PromisePool2 = _interopRequireDefault(_es6PromisePool);
 
+var _singleLineLog = require('single-line-log');
+
+var _singleLineLog2 = _interopRequireDefault(_singleLineLog);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Log = _singleLineLog2.default.stdout;
 
 var BASE_SENTRY_URL = 'https://sentry.io/api/0';
 
@@ -230,13 +236,13 @@ module.exports = function () {
       while (tryCount < 3) {
         try {
           await this.uploadFile(obj);
-          console.log('sentry upload success-->', obj.name);
+          Log('sentry upload success: ', obj.name);
           break;
         } catch (err) {
           if (this.suppressErrors || this.suppressConflictError && err.statusCode === 409) {
             break;
           }
-          tryCount++;
+          console.warn('sentry upload retry: -->', tryCount++, obj.name);
         }
       }
     }

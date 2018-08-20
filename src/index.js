@@ -1,6 +1,9 @@
 import request from 'request-promise'
 import fs from 'fs'
 import PromisePool from 'es6-promise-pool'
+import singleLineLog from 'single-line-log'
+
+const Log = singleLineLog.stdout;
 
 const BASE_SENTRY_URL = 'https://sentry.io/api/0'
 
@@ -210,6 +213,7 @@ module.exports = class SentryPlugin {
     while (tryCount < 3) {
       try {
         await this.uploadFile(obj);
+        Log('sentry upload success: ', obj.name);
         break;
       } catch(err) {
         if (
