@@ -257,7 +257,9 @@ module.exports = class SentryPlugin {
       .filter(name => this.deleteRegex.test(name))
       .forEach((name) => {
         const { existsAt } = stats.compilation.assets[name]
-        fs.unlinkSync(existsAt)
+        if (existsAt) {
+          fs.unlinkSync(existsAt)
+        }
       })
   }
 }
