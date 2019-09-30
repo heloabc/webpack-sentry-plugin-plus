@@ -280,7 +280,9 @@ module.exports = function () {
       }).forEach(function (name) {
         var existsAt = stats.compilation.assets[name].existsAt;
 
-        _fs2.default.unlinkSync(existsAt);
+        if (existsAt) {
+          _fs2.default.unlinkSync(existsAt);
+        }
       });
     }
   }]);
