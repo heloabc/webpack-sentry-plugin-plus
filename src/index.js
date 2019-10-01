@@ -1,7 +1,9 @@
-import request from 'request-promise'
-import fs from 'fs'
-import PromisePool from 'es6-promise-pool'
-import singleLineLog from 'single-line-log'
+/* eslint-disable */
+const request = require('request-promise')
+const fs = require('fs')
+const fspath = require('path')
+const PromisePool = require('es6-promise-pool')
+const singleLineLog = require('single-line-log')
 
 const Log = singleLineLog.stdout;
 
@@ -81,7 +83,8 @@ module.exports = class SentryPlugin {
   }
 
   apply(compiler) {
-    compiler.plugin('after-emit', (compilation, cb) => {
+    compiler.hooks.done.tapAsync('SentryPlus', (stats, cb) => {
+      const { compilation } = stats;
       const errors = this.ensureRequiredOptions()
 
       if (errors) {
@@ -103,14 +106,13 @@ module.exports = class SentryPlugin {
 
       return this.createRelease()
         .then(() => this.uploadFiles(files))
+        .then(() => {
+          if (this.deleteAfterCompile) {
+            this.deleteFiles(stats)
+          }
+        })
         .then(() => cb())
         .catch(err => this.handleErrors(err, compilation, cb))
-    })
-
-    compiler.plugin('done', (stats) => {
-      if (this.deleteAfterCompile) {
-        this.deleteFiles(stats)
-      }
     })
   }
 
@@ -151,7 +153,7 @@ module.exports = class SentryPlugin {
     return Object.keys(compilation.assets)
       .map((name) => {
         if (this.isIncludeOrExclude(name)) {
-          return { name, path: compilation.assets[name].existsAt }
+          return { name, path: fspath.join(compilation.outputOptions.path, name) }
         }
         return null
       })
@@ -228,6 +230,7 @@ module.exports = class SentryPlugin {
   }
 
   uploadFile({ path, name }) {
+    if (!path) return false;
     return request(
       this.combineRequestOptions(
         {
@@ -256,7 +259,7 @@ module.exports = class SentryPlugin {
     Object.keys(stats.compilation.assets)
       .filter(name => this.deleteRegex.test(name))
       .forEach((name) => {
-        const { existsAt } = stats.compilation.assets[name]
+        const existsAt = fspath.join(stats.compilation.outputOptions.path, name);
         if (existsAt) {
           fs.unlinkSync(existsAt)
         }

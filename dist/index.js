@@ -4,27 +4,16 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _requestPromise = require('request-promise');
-
-var _requestPromise2 = _interopRequireDefault(_requestPromise);
-
-var _fs = require('fs');
-
-var _fs2 = _interopRequireDefault(_fs);
-
-var _es6PromisePool = require('es6-promise-pool');
-
-var _es6PromisePool2 = _interopRequireDefault(_es6PromisePool);
-
-var _singleLineLog = require('single-line-log');
-
-var _singleLineLog2 = _interopRequireDefault(_singleLineLog);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Log = _singleLineLog2.default.stdout;
+/* eslint-disable */
+var request = require('request-promise');
+var fs = require('fs');
+var fspath = require('path');
+var PromisePool = require('es6-promise-pool');
+var singleLineLog = require('single-line-log');
+
+var Log = singleLineLog.stdout;
 
 var BASE_SENTRY_URL = 'https://sentry.io/api/0';
 
@@ -103,7 +92,9 @@ module.exports = function () {
     value: function apply(compiler) {
       var _this = this;
 
-      compiler.plugin('after-emit', function (compilation, cb) {
+      compiler.hooks.done.tapAsync('SentryPlus', function (stats, cb) {
+        var compilation = stats.compilation;
+
         var errors = _this.ensureRequiredOptions();
 
         if (errors) {
@@ -123,16 +114,14 @@ module.exports = function () {
         return _this.createRelease().then(function () {
           return _this.uploadFiles(files);
         }).then(function () {
+          if (_this.deleteAfterCompile) {
+            _this.deleteFiles(stats);
+          }
+        }).then(function () {
           return cb();
         }).catch(function (err) {
           return _this.handleErrors(err, compilation, cb);
         });
-      });
-
-      compiler.plugin('done', function (stats) {
-        if (_this.deleteAfterCompile) {
-          _this.deleteFiles(stats);
-        }
       });
     }
   }, {
@@ -169,7 +158,7 @@ module.exports = function () {
 
       return Object.keys(compilation.assets).map(function (name) {
         if (_this2.isIncludeOrExclude(name)) {
-          return { name: name, path: compilation.assets[name].existsAt };
+          return { name: name, path: fspath.join(compilation.outputOptions.path, name) };
         }
         return null;
       }).filter(function (i) {
@@ -203,7 +192,7 @@ module.exports = function () {
   }, {
     key: 'createRelease',
     value: function createRelease() {
-      return (0, _requestPromise2.default)(this.combineRequestOptions({
+      return request(this.combineRequestOptions({
         url: this.sentryReleaseUrl() + '/',
         method: 'POST',
         auth: {
@@ -220,7 +209,7 @@ module.exports = function () {
     value: function uploadFiles(files) {
       var _this3 = this;
 
-      var pool = new _es6PromisePool2.default(function () {
+      var pool = new PromisePool(function () {
         var file = files.pop();
         if (!file) {
           return null;
@@ -252,7 +241,8 @@ module.exports = function () {
       var path = _ref.path,
           name = _ref.name;
 
-      return (0, _requestPromise2.default)(this.combineRequestOptions({
+      if (!path) return false;
+      return request(this.combineRequestOptions({
         url: this.sentryReleaseUrl() + '/' + this.releaseVersion + '/files/',
         method: 'POST',
         auth: {
@@ -260,7 +250,7 @@ module.exports = function () {
         },
         headers: {},
         formData: {
-          file: _fs2.default.createReadStream(path),
+          file: fs.createReadStream(path),
           name: this.filenameTransform(name)
         }
       }, this.uploadFileRequestOptions));
@@ -278,10 +268,9 @@ module.exports = function () {
       Object.keys(stats.compilation.assets).filter(function (name) {
         return _this4.deleteRegex.test(name);
       }).forEach(function (name) {
-        var existsAt = stats.compilation.assets[name].existsAt;
-
+        var existsAt = fspath.join(stats.compilation.outputOptions.path, name);
         if (existsAt) {
-          _fs2.default.unlinkSync(existsAt);
+          fs.unlinkSync(existsAt);
         }
       });
     }

@@ -1,6 +1,6 @@
 {
   "name": "webpack-sentry-plugin-plus",
-  "version": "1.16.4",
+  "version": "1.16.5",
   "description": "Webpack plugin to upload source maps to Sentry",
   "keywords": [
     "sentry",
