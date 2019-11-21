@@ -4,6 +4,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /* eslint-disable */
@@ -220,26 +222,66 @@ module.exports = function () {
     }
   }, {
     key: 'uploadFileWithRetry',
-    value: async function uploadFileWithRetry(obj) {
-      var tryCount = 0;
-      while (tryCount < 3) {
-        try {
-          await this.uploadFile(obj);
-          Log('sentry upload success: ', obj.name);
-          break;
-        } catch (err) {
-          if (this.suppressErrors || this.suppressConflictError && err.statusCode === 409) {
-            break;
+    value: function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(obj) {
+        var tryCount;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                tryCount = 0;
+
+              case 1:
+                if (!(tryCount < 3)) {
+                  _context.next = 16;
+                  break;
+                }
+
+                _context.prev = 2;
+                _context.next = 5;
+                return this.uploadFile(obj);
+
+              case 5:
+                Log('sentry upload success: ', obj.name);
+                return _context.abrupt('break', 16);
+
+              case 9:
+                _context.prev = 9;
+                _context.t0 = _context['catch'](2);
+
+                if (!(this.suppressErrors || this.suppressConflictError && _context.t0.statusCode === 409)) {
+                  _context.next = 13;
+                  break;
+                }
+
+                return _context.abrupt('break', 16);
+
+              case 13:
+                console.warn('sentry upload retry: -->', tryCount++, obj.name);
+
+              case 14:
+                _context.next = 1;
+                break;
+
+              case 16:
+              case 'end':
+                return _context.stop();
+            }
           }
-          console.warn('sentry upload retry: -->', tryCount++, obj.name);
-        }
+        }, _callee, this, [[2, 9]]);
+      }));
+
+      function uploadFileWithRetry(_x) {
+        return _ref.apply(this, arguments);
       }
-    }
+
+      return uploadFileWithRetry;
+    }()
   }, {
     key: 'uploadFile',
-    value: function uploadFile(_ref) {
-      var path = _ref.path,
-          name = _ref.name;
+    value: function uploadFile(_ref2) {
+      var path = _ref2.path,
+          name = _ref2.name;
 
       if (!path) return false;
       return request(this.combineRequestOptions({
