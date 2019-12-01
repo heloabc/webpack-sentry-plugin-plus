@@ -1,6 +1,6 @@
 {
   "name": "webpack-sentry-plugin-plus",
-  "version": "1.16.7",
+  "version": "1.17.1",
   "description": "Webpack plugin to upload source maps to Sentry",
   "keywords": [
     "sentry",
@@ -13,22 +13,18 @@
     "dist"
   ],
   "scripts": {
-    "start": "nps",
-    "test": "nps test",
-    "prepublish": "nps prepublish",
-    "precommit": "opt --in pre-commit --exec \"nps format lint\"",
-    "prepush": "opt --in pre-push --exec \"nps validate\""
+    "build": "babel src --out-dir dist"
   },
-  "author": "roughwin <bowenqing@innobuddy.com>",
+  "author": "roughwin@qq.com",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git@code.smartstudy.com:bowenqing/webpack-sentry-plugin-plus.git"
+    "url": "git@github.com:roughwin/webpack-sentry-plugin-plus.git"
   },
   "bugs": {
-    "url": "http://code.smartstudy.com/bowenqing/webpack-sentry-plugin-plus"
+    "url": "https://github.com/roughwin/webpack-sentry-plugin-plus.git"
   },
-  "homepage": "http://code.smartstudy.com/bowenqing/webpack-sentry-plugin-plus",
+  "homepage": "https://github.com/roughwin/webpack-sentry-plugin-plus.git",
   "jest": {
     "notify": true,
     "roots": [
@@ -36,26 +32,27 @@
     ]
   },
   "dependencies": {
+    "@babel/runtime": "^7.7.4",
     "es6-promise-pool": "^2.5.0",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "single-line-log": "^1.1.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-jest": "^22.4.3",
+    "@babel/cli": "^7.7.4",
+    "@babel/core": "^7.7.4",
+    "@babel/plugin-transform-runtime": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "babel-jest": "^25.0.0",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
-    "babel-preset-es2015": "^6.24.1",
     "dotenv": "^5.0.1",
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-import": "^2.10.0",
     "husky": "^0.14.3",
-    "jest": "^22.4.3",
-    "nps": "^5.9.0",
-    "opt-cli": "^1.6.0",
+    "jest": "^25.0.0",
     "prettier": "^1.11.1",
-    "prettier-eslint-cli": "^4.7.1",
+    "prettier-eslint-cli": "^5.0.0",
     "webpack": "^4.5.0"
   },
   "peerDependencies": {

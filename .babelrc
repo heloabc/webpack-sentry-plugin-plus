@@ -1,4 +1,18 @@
 {
-    "presets": ["es2015"],
-    "plugins": ["transform-async-to-generator"]
+    "presets": [
+       ["@babel/env", {
+        "targets": {
+            "node": 6
+        }
+       }]
+    ],
+    "plugins": [
+        [
+            "@babel/plugin-transform-runtime",
+            {
+                "regenerator": true
+            }
+        ],
+        "transform-async-to-generator"
+    ]
 }
