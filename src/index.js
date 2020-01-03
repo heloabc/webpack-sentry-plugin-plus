@@ -14,6 +14,9 @@ const DEFAULT_TRANSFORM = filename => `~/${filename}`
 const DEFAULT_DELETE_REGEX = /\.map$/
 const DEFAULT_BODY_TRANSFORM = (version, projects) => ({ version, projects })
 const DEFAULT_UPLOAD_FILES_CONCURRENCY = Infinity
+const DEFAULT_REQ_TIMEOUT = 1000 * 60
+
+const timers = new Set()
 
 module.exports = class SentryPlugin {
   constructor(options) {
@@ -26,7 +29,7 @@ module.exports = class SentryPlugin {
         // eslint-disable-next-line no-console
         console.warn(
           "baseSentryURL with '/projects' suffix is deprecated; " +
-            'see https://github.com/40thieves/webpack-sentry-plugin/issues/38',
+          'see https://github.com/40thieves/webpack-sentry-plugin/issues/38',
         )
         this.baseSentryURL = options.baseSentryURL.replace(projectsRegex, '')
       }
@@ -37,6 +40,8 @@ module.exports = class SentryPlugin {
     else {
       this.baseSentryURL = BASE_SENTRY_URL
     }
+
+    this.reqTimeout = options.timeout || DEFAULT_REQ_TIMEOUT;
 
     this.organizationSlug = options.organization || options.organisation
     this.projectSlug = options.project
@@ -106,6 +111,9 @@ module.exports = class SentryPlugin {
 
       return this.createRelease()
         .then(() => this.uploadFiles(files))
+        .then(() => {
+          [...timers].forEach(t => clearTimeout(t))
+        })
         .then(() => {
           if (this.deleteAfterCompile) {
             this.deleteFiles(stats)
@@ -217,13 +225,14 @@ module.exports = class SentryPlugin {
         await this.uploadFile(obj);
         Log('sentry upload success: ', obj.name);
         break;
-      } catch(err) {
+      } catch (err) {
         if (
           this.suppressErrors ||
           (this.suppressConflictError && err.statusCode === 409)
         ) {
           break;
         }
+        console.warn('sentry catch err', err)
         console.warn('sentry upload retry: -->', tryCount++, obj.name);
       }
     }
@@ -231,23 +240,25 @@ module.exports = class SentryPlugin {
 
   uploadFile({ path, name }) {
     if (!path) return false;
-    return request(
-      this.combineRequestOptions(
-        {
-          url: `${this.sentryReleaseUrl()}/${this.releaseVersion}/files/`,
-          method: 'POST',
-          auth: {
-            bearer: this.apiKey,
+    return Promise.race([
+      timeout(this.reqTimeout)
+      , request(
+        this.combineRequestOptions(
+          {
+            url: `${this.sentryReleaseUrl()}/${this.releaseVersion}/files/`,
+            method: 'POST',
+            auth: {
+              bearer: this.apiKey,
+            },
+            headers: {},
+            formData: {
+              file: fs.createReadStream(path),
+              name: this.filenameTransform(name),
+            },
           },
-          headers: {},
-          formData: {
-            file: fs.createReadStream(path),
-            name: this.filenameTransform(name),
-          },
-        },
-        this.uploadFileRequestOptions,
-      ),
-    )
+          this.uploadFileRequestOptions,
+        ),
+      )]);
   }
 
   sentryReleaseUrl() {
@@ -265,4 +276,12 @@ module.exports = class SentryPlugin {
         }
       })
   }
+}
+
+
+function timeout(ms) {
+  return new Promise(function (resolve, reject) {
+    const timer = setTimeout(reject.bind(undefined, 'timeout'), ms);
+    timers.add(timer)
+  })
 }

@@ -1,22 +1,25 @@
-import request from 'request-promise'
-import dotenv from 'dotenv'
+const request = require('request-promise')
+const dotenv = require('dotenv')
 
 // Silence logs if .env file is missing (configured through environment
 // variables instead)
 dotenv.load({ silent: true })
 
-export const {
+const {
   SENTRY_API_KEY,
   SENTRY_ORGANIZATION,
   SENTRY_PROJECT,
 } = process.env
 
-const SENTRY_URL = `https://sentry.io/api/0/projects/${SENTRY_ORGANIZATION}/${SENTRY_PROJECT}` // eslint-disable-line max-len
+const SENTRY_URL = `${ process.env.SENTRY_URL || 'https://sentry.io/api/0'}/organizations/${SENTRY_ORGANIZATION}` // eslint-disable-line max-len
 
-export function cleanUpRelease(releaseVersion) {
+// console.log(SENTRY_URL, SENTRY_API_KEY, SENTRY_ORGANIZATION, SENTRY_PROJECT)
+
+function cleanUpRelease(releaseVersion) {
+  const url = `${SENTRY_URL}/releases/${releaseVersion}/`;
   return () =>
     request({
-      url: `${SENTRY_URL}/releases/${releaseVersion}/`,
+      url,
       method: 'DELETE',
       auth: {
         bearer: SENTRY_API_KEY,
@@ -32,7 +35,7 @@ Error: ${err.error}`,
     })
 }
 
-export function fetchRelease(version) {
+function fetchRelease(version) {
   return request({
     url: `${SENTRY_URL}/releases/${version}/`,
     auth: {
@@ -42,7 +45,7 @@ export function fetchRelease(version) {
   })
 }
 
-export function fetchFiles(version) {
+function fetchFiles(version) {
   return request({
     url: `${SENTRY_URL}/releases/${version}/files/`,
     auth: {
@@ -50,4 +53,13 @@ export function fetchFiles(version) {
     },
     json: true,
   })
+}
+
+module.exports = {
+  SENTRY_API_KEY,
+  SENTRY_ORGANIZATION,
+  SENTRY_PROJECT,
+  cleanUpRelease,
+  fetchFiles,
+  fetchRelease,
 }

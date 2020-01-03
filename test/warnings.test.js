@@ -1,4 +1,4 @@
-import { createWebpackConfig, runWebpack } from './helpers/webpack'
+const { createWebpackConfig, runWebpack } = require('./helpers/webpack')
 
 jest.mock('request-promise')
 

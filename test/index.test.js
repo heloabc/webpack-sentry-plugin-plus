@@ -1,13 +1,13 @@
-import fs from 'fs'
-import path from 'path'
+const fs = require('fs')
+const path = require('path')
 
-import { cleanUpRelease, fetchRelease, fetchFiles } from './helpers/sentry'
-import { createWebpackConfig, runWebpack, OUTPUT_PATH } from './helpers/webpack'
-import {
+const { cleanUpRelease, fetchRelease, fetchFiles } = require('./helpers/sentry')
+const { createWebpackConfig, runWebpack, OUTPUT_PATH } = require('./helpers/webpack')
+const {
   expectNoFailure,
   expectReleaseContainsFile,
   expectReleaseDoesNotContainFile,
-} from './helpers/assertion'
+} = require('./helpers/assertion')
 
 function ensureOutputPath() {
   if (!fs.existsSync(OUTPUT_PATH)) {

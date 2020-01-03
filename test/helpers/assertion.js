@@ -1,11 +1,11 @@
 // Work around Jest not having expect.fail()
-export function expectNoFailure(msg) {
+function expectNoFailure(msg) {
   return () => {
     throw new Error(msg)
   }
 }
 
-export function expectReleaseContainsFile(filename) {
+function expectReleaseContainsFile(filename) {
   return (files) => {
     const filenames = files.map(({ name }) => name)
     expect(filenames).toContain(filename)
@@ -14,11 +14,17 @@ export function expectReleaseContainsFile(filename) {
   }
 }
 
-export function expectReleaseDoesNotContainFile(filename) {
+function expectReleaseDoesNotContainFile(filename) {
   return (files) => {
     const filenames = files.map(({ name }) => name)
     expect(filenames).not.toContain(filename)
 
     return Promise.resolve(files)
   }
+}
+
+module.exports = {
+  expectNoFailure,
+  expectReleaseContainsFile,
+  expectReleaseDoesNotContainFile,
 }

@@ -1,13 +1,13 @@
-import path from 'path'
-import webpack from 'webpack'
+const path = require('path')
+const webpack = require('webpack')
 
-import SentryWebpackPlugin from '../../src/index'
+const SentryWebpackPlugin = require('../../src/index')
 
-import { SENTRY_API_KEY, SENTRY_ORGANIZATION, SENTRY_PROJECT } from './sentry'
+const { SENTRY_API_KEY, SENTRY_ORGANIZATION, SENTRY_PROJECT } = require('./sentry')
 
-export const OUTPUT_PATH = path.resolve(__dirname, '../../.tmp')
+const OUTPUT_PATH = path.resolve(__dirname, '../../.tmp')
 
-export function createWebpackConfig(sentryConfig, webpackConfig) {
+function createWebpackConfig(sentryConfig, webpackConfig) {
   return Object.assign(
     {},
     {
@@ -40,9 +40,10 @@ function configureSentryPlugin(config) {
   return new SentryWebpackPlugin(options)
 }
 
-export function runWebpack(config) {
+function runWebpack(config) {
   return new Promise((resolve, reject) => {
     webpack(config, (err, stats) => {
+      console.log('webpack cb')
       if (stats.toJson().errors.length) {
         reject({ errors: stats.toJson().errors })
       }
@@ -50,8 +51,15 @@ export function runWebpack(config) {
         reject({ warnings: stats.toJson().warnings })
       }
       else {
+        console.log('resolve')
         resolve({ config, stats })
       }
     })
   })
+}
+
+module.exports = {
+  OUTPUT_PATH,
+  createWebpackConfig,
+  runWebpack,
 }

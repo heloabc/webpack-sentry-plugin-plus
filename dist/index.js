@@ -29,6 +29,8 @@ const DEFAULT_BODY_TRANSFORM = (version, projects) => ({
 });
 
 const DEFAULT_UPLOAD_FILES_CONCURRENCY = Infinity;
+const DEFAULT_REQ_TIMEOUT = 1000 * 60;
+const timers = new Set();
 module.exports = class SentryPlugin {
   constructor(options) {
     // The baseSentryURL option was previously documented to have
@@ -48,6 +50,7 @@ module.exports = class SentryPlugin {
       this.baseSentryURL = BASE_SENTRY_URL;
     }
 
+    this.reqTimeout = options.timeout || DEFAULT_REQ_TIMEOUT;
     this.organizationSlug = options.organization || options.organisation;
     this.projectSlug = options.project;
 
@@ -109,6 +112,8 @@ module.exports = class SentryPlugin {
       }
 
       return this.createRelease().then(() => this.uploadFiles(files)).then(() => {
+        [...timers].forEach(t => clearTimeout(t));
+      }).then(() => {
         if (this.deleteAfterCompile) {
           this.deleteFiles(stats);
         }
@@ -218,6 +223,7 @@ module.exports = class SentryPlugin {
             break;
           }
 
+          console.warn('sentry catch err', err);
           console.warn('sentry upload retry: -->', tryCount++, obj.name);
         }
       }
@@ -229,7 +235,7 @@ module.exports = class SentryPlugin {
     name
   }) {
     if (!path) return false;
-    return request(this.combineRequestOptions({
+    return Promise.race([timeout(this.reqTimeout), request(this.combineRequestOptions({
       url: `${this.sentryReleaseUrl()}/${this.releaseVersion}/files/`,
       method: 'POST',
       auth: {
@@ -240,7 +246,7 @@ module.exports = class SentryPlugin {
         file: fs.createReadStream(path),
         name: this.filenameTransform(name)
       }
-    }, this.uploadFileRequestOptions));
+    }, this.uploadFileRequestOptions))]);
   }
 
   sentryReleaseUrl() {
@@ -258,3 +264,10 @@ module.exports = class SentryPlugin {
   }
 
 };
+
+function timeout(ms) {
+  return new Promise(function (resolve, reject) {
+    const timer = setTimeout(reject.bind(undefined, 'timeout'), ms);
+    timers.add(timer);
+  });
+}
